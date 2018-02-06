@@ -5,8 +5,8 @@
  */
 package servlets;
 
-import java.io.IOException;
-import java.io.PrintWriter;
+import java.io.*;
+import java.util.*;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.*;
@@ -15,8 +15,8 @@ import javax.servlet.http.*;
  *
  * @author VMNico
  */
-@WebServlet(name = "CookiesServlet", urlPatterns = {"/CookiesServlet"})
-public class CookiesServlet extends HttpServlet {
+@WebServlet(name = "CarritoServlet", urlPatterns = {"/CarritoServlet"})
+public class CarritoServlet extends HttpServlet {
 
     /**
      * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
@@ -35,10 +35,10 @@ public class CookiesServlet extends HttpServlet {
             out.println("<!DOCTYPE html>");
             out.println("<html>");
             out.println("<head>");
-            out.println("<title>Servlet CookiesServlet</title>");            
+            out.println("<title>Servlet CarritoServlet</title>");            
             out.println("</head>");
             out.println("<body>");
-            out.println("<h1>Servlet CookiesServlet at " + request.getContextPath() + "</h1>");
+            out.println("<h1>Servlet CarritoServlet at " + request.getContextPath() + "</h1>");
             out.println("</body>");
             out.println("</html>");
         }
@@ -56,29 +56,7 @@ public class CookiesServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        boolean nuevoUsuario = true;
-        
-        Cookie[] cookies = request.getCookies();
-        if (cookies != null){
-            for(Cookie c : cookies){
-                if(c.getName().equals("visitanteRecurrente") && c.getValue().equals("si")){
-                    nuevoUsuario = false;
-                    break;
-                }
-            }
-        }
-        String mensaje = null;
-        if (nuevoUsuario) {
-            Cookie visitanteCookie = new Cookie ("visitanteRecurrente", "si");
-            response.addCookie(visitanteCookie);
-            mensaje = "Gracias por visitar nuestro sitio";
-        } else {
-            mensaje = "Gracias por visitar NUEVAMENTE nuestro sitio";
-        }
-        
-        response.setContentType("text/html");
-        PrintWriter out = response.getWriter();
-        out.println("Mensaje: " + mensaje);
+        processRequest(request, response);
     }
 
     /**
@@ -92,7 +70,30 @@ public class CookiesServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        processRequest(request, response);
+        response.setContentType("text/html");
+        String articuloNuevo = request.getParameter("articulo");
+        HttpSession sesion = request.getSession();
+        List<String> articulos = (List<String>) sesion.getAttribute("articulos");
+        
+        if (articulos == null){
+            articulos = new ArrayList<>();
+            sesion.setAttribute("articulos", articulos);
+        }
+        
+        if (articuloNuevo != null && !articuloNuevo.trim().equals("")){
+            articulos.add(articuloNuevo);
+        }
+        
+        try (PrintWriter out = response.getWriter()){
+            out.println("<h1>Lista de articulos</h1>");
+            out.println("<br>");
+            for (String articulo : articulos) {
+                out.println("<LI>"+articulo+"</LI>");
+            }
+            
+            out.println("<br>");
+            out.println("<a href='/EjemploCarritoCompras'>Regresar</a>");
+        }
     }
 
     /**

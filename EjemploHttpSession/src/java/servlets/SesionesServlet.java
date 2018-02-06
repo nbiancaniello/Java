@@ -15,8 +15,8 @@ import javax.servlet.http.*;
  *
  * @author VMNico
  */
-@WebServlet(name = "CookiesServlet", urlPatterns = {"/CookiesServlet"})
-public class CookiesServlet extends HttpServlet {
+@WebServlet(name = "SesionesServlet", urlPatterns = {"/SesionesServlet"})
+public class SesionesServlet extends HttpServlet {
 
     /**
      * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
@@ -35,10 +35,10 @@ public class CookiesServlet extends HttpServlet {
             out.println("<!DOCTYPE html>");
             out.println("<html>");
             out.println("<head>");
-            out.println("<title>Servlet CookiesServlet</title>");            
+            out.println("<title>Servlet SesionesServlet</title>");            
             out.println("</head>");
             out.println("<body>");
-            out.println("<h1>Servlet CookiesServlet at " + request.getContextPath() + "</h1>");
+            out.println("<h1>Servlet SesionesServlet at " + request.getContextPath() + "</h1>");
             out.println("</body>");
             out.println("</html>");
         }
@@ -56,29 +56,25 @@ public class CookiesServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        boolean nuevoUsuario = true;
-        
-        Cookie[] cookies = request.getCookies();
-        if (cookies != null){
-            for(Cookie c : cookies){
-                if(c.getName().equals("visitanteRecurrente") && c.getValue().equals("si")){
-                    nuevoUsuario = false;
-                    break;
-                }
-            }
-        }
-        String mensaje = null;
-        if (nuevoUsuario) {
-            Cookie visitanteCookie = new Cookie ("visitanteRecurrente", "si");
-            response.addCookie(visitanteCookie);
-            mensaje = "Gracias por visitar nuestro sitio";
-        } else {
-            mensaje = "Gracias por visitar NUEVAMENTE nuestro sitio";
-        }
-        
         response.setContentType("text/html");
+        HttpSession sesion = request.getSession();
+        String titulo = null;
+        Integer contadorVisitas = (Integer) sesion.getAttribute("contadorVisitas");
+        
+        if (contadorVisitas == null){
+            contadorVisitas = new Integer(1);
+            titulo = "Bienvenido por primera vez...";
+        } else {
+            titulo = "Bienvenido nuevamente...";
+            contadorVisitas++;
+        }
+        sesion.setAttribute("contadorVisitas", contadorVisitas);
         PrintWriter out = response.getWriter();
-        out.println("Mensaje: " + mensaje);
+        out.println("Titulo: " + titulo);
+        out.println("<br>");
+        out.println("No. accesos al recurso: " + contadorVisitas);
+        out.println("<br>");
+        out.println("ID de la sesion: " + sesion.getId());
     }
 
     /**

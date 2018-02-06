@@ -15,8 +15,8 @@ import javax.servlet.http.*;
  *
  * @author VMNico
  */
-@WebServlet(name = "CookiesServlet", urlPatterns = {"/CookiesServlet"})
-public class CookiesServlet extends HttpServlet {
+@WebServlet(name = "ContadorVisitaServlet", urlPatterns = {"/ContadorVisitaServlet"})
+public class ContadorVisitaServlet extends HttpServlet {
 
     /**
      * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
@@ -35,10 +35,10 @@ public class CookiesServlet extends HttpServlet {
             out.println("<!DOCTYPE html>");
             out.println("<html>");
             out.println("<head>");
-            out.println("<title>Servlet CookiesServlet</title>");            
+            out.println("<title>Servlet ContadorVisitaServlet</title>");            
             out.println("</head>");
             out.println("<body>");
-            out.println("<h1>Servlet CookiesServlet at " + request.getContextPath() + "</h1>");
+            out.println("<h1>Servlet ContadorVisitaServlet at " + request.getContextPath() + "</h1>");
             out.println("</body>");
             out.println("</html>");
         }
@@ -56,29 +56,28 @@ public class CookiesServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        boolean nuevoUsuario = true;
+        int contador = 0;
         
         Cookie[] cookies = request.getCookies();
         if (cookies != null){
             for(Cookie c : cookies){
-                if(c.getName().equals("visitanteRecurrente") && c.getValue().equals("si")){
-                    nuevoUsuario = false;
-                    break;
+                if (c.getName().equals("contadorVisitas")){
+                    try {
+                        contador = Integer.parseInt(c.getValue());
+                    } catch (NumberFormatException e){
+                        contador = 0;
+                    }
                 }
             }
         }
-        String mensaje = null;
-        if (nuevoUsuario) {
-            Cookie visitanteCookie = new Cookie ("visitanteRecurrente", "si");
-            response.addCookie(visitanteCookie);
-            mensaje = "Gracias por visitar nuestro sitio";
-        } else {
-            mensaje = "Gracias por visitar NUEVAMENTE nuestro sitio";
-        }
+        contador ++;
+        Cookie c = new Cookie("contadorVisitas", Integer.toString(contador));
+        c.setMaxAge(3600);
+        response.addCookie(c);
         
         response.setContentType("text/html");
         PrintWriter out = response.getWriter();
-        out.println("Mensaje: " + mensaje);
+        out.println("Contador de visitas de cada cliente: " + contador);
     }
 
     /**
